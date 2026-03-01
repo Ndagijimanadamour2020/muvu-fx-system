@@ -1,0 +1,246 @@
+-- Enable foreign key support
+PRAGMA foreign_keys = ON;
+
+-- Table: activity_log
+CREATE TABLE "activity_log" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "user_id" INTEGER,
+    "action" TEXT NOT NULL,
+    "details" TEXT,
+    "ip_address" TEXT,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL
+);
+
+-- Table: daily_summary
+CREATE TABLE "daily_summary" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "summary_date" DATE NOT NULL UNIQUE,
+    "total_sales" REAL DEFAULT 0,
+    "total_profit" REAL DEFAULT 0,
+    "total_expenses" REAL DEFAULT 0,
+    "net_profit" REAL DEFAULT 0,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: expenses
+CREATE TABLE "expenses" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "description" TEXT NOT NULL,
+    "amount" REAL NOT NULL,
+    "expense_date" DATE NOT NULL,
+    "recorded_by" INTEGER,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY ("recorded_by") REFERENCES "users"("id") ON DELETE SET NULL
+);
+
+-- Table: products
+CREATE TABLE "products" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "product_name" TEXT NOT NULL,
+    "description" TEXT,
+    "quantity" INTEGER DEFAULT 0,
+    "low_stock_threshold" INTEGER DEFAULT 10,
+    "buying_price" REAL DEFAULT 0,
+    "selling_price" REAL DEFAULT 0,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    -- Note: removed "updated_at" because SQLite doesn't auto-update; handle in code if needed
+);
+
+-- Table: product_history
+CREATE TABLE "product_history" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "product_id" INTEGER NOT NULL,
+    "quantity" INTEGER NOT NULL,
+    "total_cost" REAL,
+    "restock_date" DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE
+);
+
+-- Table: sales
+CREATE TABLE "sales" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "product_id" INTEGER,
+    "quantity" INTEGER NOT NULL,
+    "unit_price" REAL NOT NULL,
+    "total_amount" REAL NOT NULL,
+    "profit" REAL NOT NULL,
+    "sold_by" INTEGER,
+    "sale_date" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE,
+    FOREIGN KEY ("sold_by") REFERENCES "users"("id") ON DELETE SET NULL
+);
+
+-- Table: users
+CREATE TABLE "users" (
+    "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+    "username" TEXT NOT NULL UNIQUE,
+    "password" TEXT NOT NULL,
+    "full_name" TEXT NOT NULL,
+    "email" TEXT NOT NULL UNIQUE,
+    "phone" TEXT,
+    "role" TEXT NOT NULL DEFAULT 'staff' CHECK(role IN ('admin', 'staff')),
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    -- removed "updated_at"
+);
+
+-- Insert data
+
+-- users
+INSERT INTO "users" ("id", "username", "password", "full_name", "email", "phone", "role", "created_at") VALUES
+(10, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'System Administrator', 'admin@muvufx.com', '0786874837', 'admin', '2026-02-25 10:24:20'),
+(13, 'mukamana', '$2y$10$DtGpzkTUb9E4pq/bKAgED.E6.a./e7Ijh7Od0BN89BfQzALRuSruS', 'MUKAMANA Ange', 'mukamana@gmail.com', '0784785254', 'staff', '2026-02-26 13:05:56');
+
+-- products
+INSERT INTO "products" ("id", "product_name", "description", "quantity", "low_stock_threshold", "buying_price", "selling_price", "created_at") VALUES
+(1, 'Battery', 'This is a battery for TECNO Phones', 10, 1, 3000.00, 5000.00, '2026-02-24 12:36:21'),
+(2, 'AirTel Imagina Screen', 'This is a screen for AirTel Imagaine phones', 40, 1, 3500.00, 7000.00, '2026-02-24 12:38:34'),
+(3, 'Headphone', 'Zero to A', 11, 1, 500.00, 800.00, '2026-02-25 14:07:02'),
+(4, 'TECNO POP9 Screen', 'This is a screen for POP 9', 58, 1, 8000.00, 10000.00, '2026-02-25 15:03:24'),
+(5, 'Speaker SP', 'This is a small speaker for home', 42, 0, 50000.00, 70000.00, '2026-02-25 18:25:49');
+
+-- product_history
+INSERT INTO "product_history" ("id", "product_id", "quantity", "total_cost", "restock_date") VALUES
+(1, 3, 9, 4500.00, '2026-02-26 09:26:58'),
+(2, 5, 9, 450000.00, '2026-02-26 09:26:58'),
+(3, 4, 5, 40000.00, '2026-02-26 09:26:58'),
+(4, 3, 9, 4500.00, '2026-02-26 09:26:59'),
+(5, 5, 9, 450000.00, '2026-02-26 09:26:59'),
+(6, 4, 5, 40000.00, '2026-02-26 09:26:59'),
+(7, 3, 9, 4500.00, '2026-02-26 09:27:00'),
+(8, 5, 9, 450000.00, '2026-02-26 09:27:00'),
+(9, 4, 5, 40000.00, '2026-02-26 09:27:00'),
+(10, 3, 9, 4500.00, '2026-02-26 09:27:00'),
+(11, 5, 9, 450000.00, '2026-02-26 09:27:00'),
+(12, 4, 5, 40000.00, '2026-02-26 09:27:00'),
+(13, 3, 9, 4500.00, '2026-02-26 09:27:00'),
+(14, 5, 9, 450000.00, '2026-02-26 09:27:00'),
+(15, 4, 5, 40000.00, '2026-02-26 09:27:00'),
+(16, 3, 9, 4500.00, '2026-02-26 09:27:00'),
+(17, 5, 9, 450000.00, '2026-02-26 09:27:00'),
+(18, 4, 5, 40000.00, '2026-02-26 09:27:00'),
+(19, 3, 9, 4500.00, '2026-02-26 09:27:00'),
+(20, 5, 9, 450000.00, '2026-02-26 09:27:00'),
+(21, 4, 5, 40000.00, '2026-02-26 09:27:00'),
+(22, 3, 9, 4500.00, '2026-02-26 09:27:00'),
+(23, 5, 9, 450000.00, '2026-02-26 09:27:00'),
+(24, 4, 5, 40000.00, '2026-02-26 09:27:00'),
+(25, 2, 10, 35000.00, '2026-02-26 14:59:00'),
+(26, 1, 10, 30000.00, '2026-02-26 14:59:00'),
+(27, 3, 10, 5000.00, '2026-02-26 14:59:00'),
+(28, 5, 10, 500000.00, '2026-02-26 14:59:00'),
+(29, 4, 10, 80000.00, '2026-02-26 14:59:00');
+
+-- sales
+INSERT INTO "sales" ("id", "product_id", "quantity", "unit_price", "total_amount", "profit", "sold_by", "sale_date") VALUES
+(2, 2, 2, 7000.00, 14000.00, 7000.00, 10, '2026-02-25 10:39:22'),
+(3, 1, 3, 5000.00, 15000.00, 6000.00, NULL, '2026-02-25 13:56:14'),
+(5, 5, 3, 80000.00, 240000.00, 90000.00, NULL, '2026-02-25 18:32:39'),
+(7, 2, 20, 7000.00, 140000.00, 70000.00, 10, '2026-02-26 07:31:57'),
+(8, 1, 10, 5000.00, 50000.00, 20000.00, 10, '2026-02-26 07:32:13'),
+(9, 3, 82, 800.00, 65600.00, 24600.00, 10, '2026-02-26 07:32:40'),
+(10, 5, 50, 70000.00, 3500000.00, 1000000.00, 10, '2026-02-26 07:33:12'),
+(11, 4, 2, 10000.00, 20000.00, 4000.00, 10, '2026-02-26 12:57:54'),
+(12, 5, 1, 70000.00, 70000.00, 20000.00, 13, '2026-02-26 13:07:42');
+
+-- activity_log
+INSERT INTO "activity_log" ("id", "user_id", "action", "details", "ip_address", "created_at") VALUES
+(1, NULL, 'User Registration', 'Registered new user: accountant', '::1', '2026-02-24 12:45:34'),
+(2, NULL, 'Logout', 'User logged out', '::1', '2026-02-24 12:45:46'),
+(3, 10, 'Login', 'User logged in', '::1', '2026-02-25 10:26:28'),
+(4, 10, 'Logout', 'User logged out', '::1', '2026-02-25 10:30:39'),
+(5, 10, 'Login', 'User logged in', '::1', '2026-02-25 10:30:41'),
+(6, 10, 'Logout', 'User logged out', '::1', '2026-02-25 10:42:26'),
+(7, 10, 'Login', 'User logged in', '::1', '2026-02-25 10:42:51'),
+(8, 10, 'Logout', 'User logged out', '::1', '2026-02-25 10:43:25'),
+(9, 10, 'Login', 'User logged in', '::1', '2026-02-25 10:43:27'),
+(10, 10, 'Logout', 'User logged out', '::1', '2026-02-25 10:44:32'),
+(11, 10, 'Login', 'User logged in', '::1', '2026-02-25 10:44:34'),
+(12, 10, 'User Registration', 'Registered new user: staff', '::1', '2026-02-25 11:45:58'),
+(13, 10, 'User Registration', 'Registered new user: staff1', '::1', '2026-02-25 12:28:04'),
+(15, 10, 'Logout', 'User logged out', '::1', '2026-02-25 13:08:10'),
+(16, NULL, 'Login', 'User logged in', '::1', '2026-02-25 13:08:21'),
+(17, NULL, 'Logout', 'User logged out', '::1', '2026-02-25 13:48:49'),
+(18, NULL, 'Login', 'User logged in', '::1', '2026-02-25 13:48:51'),
+(20, NULL, 'Logout', 'User logged out', '::1', '2026-02-25 13:59:23'),
+(21, 10, 'Login', 'User logged in', '::1', '2026-02-25 13:59:28'),
+(22, 10, 'Logout', 'User logged out', '::1', '2026-02-25 14:01:39'),
+(23, NULL, 'Login', 'User logged in', '::1', '2026-02-25 14:01:45'),
+(25, NULL, 'Logout', 'User logged out', '::1', '2026-02-25 14:05:19'),
+(26, 10, 'Login', 'User logged in', '::1', '2026-02-25 14:05:22'),
+(28, 10, 'Logout', 'User logged out', '::1', '2026-02-25 14:21:24'),
+(29, 10, 'Login', 'User logged in', '::1', '2026-02-25 14:21:26'),
+(30, 10, 'Add Product', 'Added product: TECNO POP9 Screen', '::1', '2026-02-25 15:03:24'),
+(31, 10, 'Edit Product', 'Edited product: TECNO POP9 Screen', '::1', '2026-02-25 15:20:18'),
+(32, 10, 'Delete Sale', 'Deleted sale ID: 4', '::1', '2026-02-25 15:30:52'),
+(33, 10, 'Edit Product', 'Edited product: AirTel Imagina Screen', '::1', '2026-02-25 15:52:13'),
+(34, 10, 'Logout', 'User logged out', '::1', '2026-02-25 16:16:26'),
+(35, NULL, 'Login', 'User logged in', '::1', '2026-02-25 16:16:32'),
+(36, NULL, 'Logout', 'User logged out', '::1', '2026-02-25 16:17:10'),
+(37, NULL, 'Login', 'User logged in', '::1', '2026-02-25 18:18:09'),
+(38, NULL, 'Logout', 'User logged out', '::1', '2026-02-25 18:24:28'),
+(39, 10, 'Login', 'User logged in', '::1', '2026-02-25 18:24:33'),
+(40, 10, 'Add Product', 'Added product: Speaker SP', '::1', '2026-02-25 18:25:50'),
+(41, 10, 'Logout', 'User logged out', '::1', '2026-02-25 18:27:34'),
+(42, NULL, 'Login', 'User logged in', '::1', '2026-02-25 18:27:41'),
+(43, NULL, 'Logout', 'User logged out', '::1', '2026-02-25 18:30:27'),
+(44, 10, 'Login', 'User logged in', '::1', '2026-02-25 18:30:31'),
+(45, 10, 'Edit Product', 'Edited product: Speaker SP', '::1', '2026-02-25 18:39:29'),
+(46, 10, 'Edit Product', 'Edited product: Headphone', '::1', '2026-02-25 18:40:14'),
+(47, 10, 'Edit Product', 'Edited product: Battery', '::1', '2026-02-25 18:41:02'),
+(48, 10, 'Restock Product', 'Added 10 units to product ID: 1', '::1', '2026-02-25 18:42:51'),
+(49, 10, 'Restock Product', 'Added 10 units to product ID: 5', '::1', '2026-02-25 18:43:05'),
+(50, 10, 'Restock Product', 'Added 10 units to product ID: 3', '::1', '2026-02-25 18:44:59'),
+(51, 10, 'Logout', 'User logged out', '::1', '2026-02-25 18:48:45'),
+(52, 10, 'Login', 'User logged in', '::1', '2026-02-26 05:54:47'),
+(53, 10, 'Delete Sale', 'Deleted sale ID: 6', '::1', '2026-02-26 06:34:12'),
+(54, 10, 'Logout', 'User logged out', '::1', '2026-02-26 06:37:37'),
+(55, 10, 'Login', 'User logged in', '::1', '2026-02-26 07:01:44'),
+(56, 10, 'Bulk Restock', 'Processed bulk restock', '::1', '2026-02-26 07:26:58'),
+(57, 10, 'Bulk Restock', 'Processed bulk restock', '::1', '2026-02-26 07:26:59'),
+(58, 10, 'Bulk Restock', 'Processed bulk restock', '::1', '2026-02-26 07:27:00'),
+(59, 10, 'Bulk Restock', 'Processed bulk restock', '::1', '2026-02-26 07:27:00'),
+(60, 10, 'Bulk Restock', 'Processed bulk restock', '::1', '2026-02-26 07:27:00'),
+(61, 10, 'Bulk Restock', 'Processed bulk restock', '::1', '2026-02-26 07:27:00'),
+(62, 10, 'Bulk Restock', 'Processed bulk restock', '::1', '2026-02-26 07:27:00'),
+(63, 10, 'Bulk Restock', 'Processed bulk restock', '::1', '2026-02-26 07:27:00'),
+(64, 10, 'Add Sale', 'Sold 20 of product ID 2', '::1', '2026-02-26 07:31:57'),
+(65, 10, 'Add Sale', 'Sold 10 of product ID 1', '::1', '2026-02-26 07:32:13'),
+(66, 10, 'Add Sale', 'Sold 82 of product ID 3', '::1', '2026-02-26 07:32:40'),
+(67, 10, 'Add Sale', 'Sold 50 of product ID 5', '::1', '2026-02-26 07:33:12'),
+(68, 10, 'Logout', 'User logged out', '::1', '2026-02-26 07:40:40'),
+(69, 10, 'Login', 'User logged in', '::1', '2026-02-26 09:07:32'),
+(70, 10, 'Logout', 'User logged out', '::1', '2026-02-26 09:13:23'),
+(71, 10, 'Login', 'User logged in', '::1', '2026-02-26 09:19:55'),
+(72, 10, 'Logout', 'User logged out', '::1', '2026-02-26 09:26:15'),
+(73, 10, 'Login', 'User logged in', '::1', '2026-02-26 09:27:55'),
+(74, 10, 'Logout', 'User logged out', '::1', '2026-02-26 10:13:09'),
+(75, NULL, 'Login', 'User logged in', '::1', '2026-02-26 10:13:14'),
+(76, NULL, 'Logout', 'User logged out', '::1', '2026-02-26 11:19:01'),
+(77, 10, 'Login', 'User logged in', '::1', '2026-02-26 11:19:05'),
+(78, 10, 'Logout', 'User logged out', '::1', '2026-02-26 12:05:09'),
+(79, 10, 'Login', 'User logged in', '::1', '2026-02-26 12:05:24'),
+(80, 10, 'Logout', 'User logged out', '::1', '2026-02-26 12:06:50'),
+(81, 10, 'Login', 'User logged in', '::1', '2026-02-26 12:15:58'),
+(82, 10, 'Logout', 'User logged out', '::1', '2026-02-26 12:16:24'),
+(83, NULL, 'Login', 'User logged in', '::1', '2026-02-26 12:16:30'),
+(84, NULL, 'Logout', 'User logged out', '::1', '2026-02-26 12:27:47'),
+(85, 10, 'Login', 'User logged in', '::1', '2026-02-26 12:27:52'),
+(86, 10, 'Login', 'User logged in', '127.0.0.1', '2026-02-26 12:56:06'),
+(87, 10, 'Add Sale', 'Sold 2 of product ID 4', '127.0.0.1', '2026-02-26 12:57:54'),
+(88, 10, 'Bulk Restock', 'Processed bulk restock', '127.0.0.1', '2026-02-26 12:59:00'),
+(89, 10, 'Logout', 'User logged out', '127.0.0.1', '2026-02-26 13:02:22'),
+(90, 10, 'Login', 'User logged in', '127.0.0.1', '2026-02-26 13:03:16'),
+(91, 10, 'Logout', 'User logged out', '127.0.0.1', '2026-02-26 13:03:30'),
+(92, 10, 'Logout', 'User logged out', '::1', '2026-02-26 13:04:12'),
+(93, 10, 'Login', 'User logged in', '::1', '2026-02-26 13:04:20'),
+(94, 10, 'Delete User', 'Deleted user ID: 11', '::1', '2026-02-26 13:04:36'),
+(95, 10, 'User Registration', 'Registered new user: mukamana', '::1', '2026-02-26 13:05:56'),
+(96, 10, 'Logout', 'User logged out', '::1', '2026-02-26 13:06:08'),
+(97, 13, 'Login', 'User logged in', '::1', '2026-02-26 13:06:21'),
+(98, 13, 'Add Sale', 'Sold 1 of product ID 5', '::1', '2026-02-26 13:07:42'),
+(99, 13, 'Logout', 'User logged out', '::1', '2026-02-26 13:07:54'),
+(100, 13, 'Login', 'User logged in', '127.0.0.1', '2026-02-26 13:08:07'),
+(101, 13, 'Login', 'User logged in', '::1', '2026-02-26 13:21:52');
+
+-- Note: daily_summary and expenses tables have no data, so no INSERT needed.
