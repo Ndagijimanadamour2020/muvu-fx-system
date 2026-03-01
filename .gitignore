@@ -1,1 +1,16 @@
-
+echo "# OS files" > .gitignore
+echo "Thumbs.db" >> .gitignore
+echo ".DS_Store" >> .gitignore
+echo "" >> .gitignore
+echo "# PHP Desktop specific" >> .gitignore
+echo "debug.log" >> .gitignore
+echo "webcache/" >> .gitignore
+echo "" >> .gitignore
+echo "# Database credentials" >> .gitignore
+echo "includes/config.php" >> .gitignore
+echo "*.sql" >> .gitignore
+echo "*.sqlite" >> .gitignore
+echo "" >> .gitignore
+echo "# IDE files" >> .gitignore
+echo ".vscode/" >> .gitignore
+echo ".idea/" >> .gitignore
